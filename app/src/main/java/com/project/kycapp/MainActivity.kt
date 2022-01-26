@@ -9,6 +9,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.project.kycapp.ui.theme.KycAppTheme
+import com.project.kycapp.views.login.LoginScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,7 +17,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             KycAppTheme {
                 Surface(color = MaterialTheme.colors.background) {
-                    Text("Hello")
+                    LoginScreen()
                 }
             }
         }
