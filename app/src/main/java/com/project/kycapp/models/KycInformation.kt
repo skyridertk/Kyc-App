@@ -1,7 +1,12 @@
 package com.project.kycapp.models
 
-data class KYC(
+data class KycInformation(
     val kycId: String,
+    val idNumber: String,
+    val firstName: String,
+    val middleName: String,
+    val surname: String,
+    val phoneNumber: String,
     val address: String,
     val dateOfBirth: String,
     val gender: Gender,

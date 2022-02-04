@@ -1,11 +1,10 @@
 package com.project.kycapp.repository
 
-import com.project.kycapp.models.KyChainParticipant
-import com.project.kycapp.models.LoginAuth
+import com.project.kycapp.models.Account
 
 interface KycRepository {
-    fun register(kyChainParticipant: KyChainParticipant)
-    fun login(loginAuth: LoginAuth)
-    fun updatePhysicalAddress()
-    fun updateProofOfResidence()
+    suspend fun register(account: Account)
+    suspend fun login(account: Account)
+    suspend fun refreshToken(token: String)
+    suspend fun validateToken(token: String)
 }

@@ -1,10 +1,7 @@
 package com.project.kycapp.views.login
 
 import android.widget.Space
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -40,5 +37,5 @@ fun CustomField(value: String, label: String, onchange: (String) -> Unit){
         onchange(it)
     }, label = {
         Text("$label")
-    })
+    }, modifier = Modifier.fillMaxWidth())
 }
