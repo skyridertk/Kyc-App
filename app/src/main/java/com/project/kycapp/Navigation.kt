@@ -9,26 +9,24 @@ import com.google.accompanist.navigation.animation.navigation
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.project.kycapp.views.dashboard.DashboardScreen
 import com.project.kycapp.views.register.RegistrationScreen
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun NavigationController() {
+fun NavigationController(startDestination: String = "authentication") {
     val navController = rememberAnimatedNavController()
-    
-    val TAG = "NavigationController"
 
-    AnimatedNavHost(navController = navController, startDestination = "registration"){
-        navigation(startDestination = "register", route = "registration"){
-            Log.d(TAG, "NavigationController: Here")
-            Log.d(TAG, "NavigationController: ${this.route}")
-            Log.d(TAG, "NavigationController: ${this.label}")
-            Log.d(TAG, "NavigationController: ${this.provider.navigators}")
-            Log.d(TAG, "NavigationController: ${this.toString()}")
-            Log.d(TAG, "NavigationController: ")
+    AnimatedNavHost(navController = navController, startDestination = startDestination){
+        navigation(startDestination = "register", route = "authentication"){
             composable("register"){
-                Log.d(TAG, "NavigationController: Inside")
                 RegistrationScreen(navController)
+            }
+        }
+
+        navigation(startDestination = "dashboard", route = "main"){
+            composable("dashboard"){
+                DashboardScreen()
             }
         }
     }

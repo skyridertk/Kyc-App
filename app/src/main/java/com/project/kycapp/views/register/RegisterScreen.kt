@@ -9,10 +9,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -24,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.project.kycapp.views.login.CustomField
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -39,6 +37,19 @@ fun RegistrationScreen(
     val scope = rememberCoroutineScope()
 
     val current = LocalContext.current
+
+    LaunchedEffect(Unit){
+        registerViewModel.eventFlow.collect {
+            when (it){
+                RegisterViewModel.UIEvent.Main -> {
+                    navHostController.navigate("main")
+                }
+                RegisterViewModel.UIEvent.Login -> {
+                    navHostController.navigate("login")
+                }
+            }
+        }
+    }
 
     Scaffold(scaffoldState = state) {
         ConstraintLayout(

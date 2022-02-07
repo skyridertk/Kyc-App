@@ -19,10 +19,10 @@ class UserPreferences(private val context: Context) {
                 preferences[TOKEN_KEY] ?: ""
             }
 
-    fun sipFlow(): Flow<String> =
+    fun emailFlow(): Flow<String> =
         context.dataStore.data
             .map { preferences ->
-                preferences[SIP_USER_KEY] ?: ""
+                preferences[EMAIL_KEY] ?: ""
             }
 
     suspend fun setToken(token: String) {
@@ -31,15 +31,15 @@ class UserPreferences(private val context: Context) {
         }
     }
 
-    suspend fun setSipUser(user: String) {
+    suspend fun setEmail(email: String) {
         context.dataStore.edit { preferences ->
-            preferences[SIP_USER_KEY] = user
+            preferences[EMAIL_KEY] = email
         }
     }
 
     companion object {
         val TOKEN_KEY = stringPreferencesKey("token_key")
-        val SIP_USER_KEY = stringPreferencesKey("sip_user_key")
+        val EMAIL_KEY = stringPreferencesKey("email_key")
     }
 }
 
