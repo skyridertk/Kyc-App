@@ -2,9 +2,9 @@ package com.project.kycapp.data.repository
 
 import android.util.Log
 import com.project.kycapp.data.api.KycApi
-import com.project.kycapp.models.Account
-import com.project.kycapp.models.Authentication
-import com.project.kycapp.models.Validation
+import com.project.kycapp.data.api.dto.KycRequestDto
+import com.project.kycapp.data.api.dto.KycResponseMessageDto
+import com.project.kycapp.models.*
 import com.project.kycapp.repository.KycRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -20,14 +20,10 @@ class KycRepositoryImpl @Inject constructor(private val kycApi: KycApi): KycRepo
         emit(Resource.Success<Authentication>(res.toAuthentication()))
     }
 
-    override suspend fun login(account: Account): Flow<Resource<String>> = flow {
+    override suspend fun login(account: Account): Flow<Resource<Authentication>> = flow {
         val res = kycApi.loginUser(account)
 
-        if (res.isSuccessful){
-            emit(Resource.Success<String>("Complete"))
-        } else {
-            emit(Resource.Error<String>("Failed"))
-        }
+        emit(Resource.Success<Authentication>(res.toAuthentication()))
     }
 
 
@@ -39,6 +35,18 @@ class KycRepositoryImpl @Inject constructor(private val kycApi: KycApi): KycRepo
         val res = kycApi.validateToken(token)
 
         emit(Resource.Success<Validation>(res.toValidation()))
+    }
+
+    override suspend fun browse(token: String): Flow<Resource<List<Kyc>>> = flow {
+        val res = kycApi.browse(token)
+
+        emit(Resource.Success<List<Kyc>>(res.data.map { it.toKyc() }))
+    }
+
+    override suspend fun submit(token: String, requestDto: KycRequestDto): Flow<Resource<Message>> = flow {
+        val res = kycApi.submit(token, requestDto)
+
+        emit(Resource.Success<Message>(res.toMessage()))
     }
 }
 

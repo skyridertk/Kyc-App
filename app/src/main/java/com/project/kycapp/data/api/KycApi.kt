@@ -1,9 +1,6 @@
 package com.project.kycapp.data.api
 
-import com.project.kycapp.data.api.dto.LoginResponseDto
-import com.project.kycapp.data.api.dto.RefreshTokenDto
-import com.project.kycapp.data.api.dto.RegisterResponseDto
-import com.project.kycapp.data.api.dto.ValidationDto
+import com.project.kycapp.data.api.dto.*
 import com.project.kycapp.models.Account
 import retrofit2.Response
 import retrofit2.http.Body
@@ -13,10 +10,10 @@ import retrofit2.http.POST
 
 interface KycApi {
     @POST("/api/login")
-    suspend fun loginUser(account: Account): Response<LoginResponseDto>
+    suspend fun loginUser(account: Account): AuthenticationResponseDto
 
     @POST("/api/register")
-    suspend fun registerUser(@Body account: Account): RegisterResponseDto
+    suspend fun registerUser(@Body account: Account): AuthenticationResponseDto
 
     @GET("/api/refresh")
     suspend fun refreshToken(@Header("token") token: String): RefreshTokenDto
@@ -25,8 +22,8 @@ interface KycApi {
     suspend fun validateToken(@Header("token") token: String): ValidationDto
 
     @GET("/api/kyc")
-    suspend fun getAllUserKyc(@Header("token") token: String): LoginResponseDto
+    suspend fun browse(@Header("token") token: String): KycResponseDto
 
     @POST("/api/kyc")
-    suspend fun saveKyc(@Header("token") token: String, account: Account): LoginResponseDto
+    suspend fun submit(@Header("token") token: String, @Body kycRequestDto: KycRequestDto): KycResponseMessageDto
 }

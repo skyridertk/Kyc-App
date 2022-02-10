@@ -6,7 +6,7 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class RegisterResponseDto(
+data class AuthenticationResponseDto(
     @Json(name = "message")
     val message: String,
     @Json(name = "token")

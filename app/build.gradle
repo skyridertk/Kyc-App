@@ -3,6 +3,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
+    id 'kotlin-parcelize'
 }
 
 android {
@@ -98,6 +99,14 @@ dependencies {
 
     //splash
     implementation 'androidx.core:core-splashscreen:1.0.0-beta01'
+
+    //Camera
+    implementation("androidx.camera:camera-camera2:1.1.0-beta01")
+    implementation("androidx.camera:camera-view:1.1.0-beta01")
+    implementation("androidx.camera:camera-lifecycle:1.0.2")
+
+    //Permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.18.0")
 
 
     //test
