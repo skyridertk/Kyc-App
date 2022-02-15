@@ -16,6 +16,8 @@ data class KycResponseDto(
 ) {
     @JsonClass(generateAdapter = true)
     data class Data(
+        @Json(name = "id")
+        val id: String,
         @Json(name = "address")
         val address: String,
         @Json(name = "approvalCount")
@@ -39,6 +41,7 @@ data class KycResponseDto(
     ){
         fun toKyc(): Kyc {
             return  Kyc(
+                id = id,
                 idNumber=idNumber,
                 firstName = fname,
                 surname = lname,

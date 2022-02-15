@@ -11,21 +11,23 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.project.kycapp.R
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.util.*
 
 @OptIn(ExperimentalAnimationApi::class)
-@Preview
 @Composable
 fun DashboardScreen(
     navHostController: NavHostController = rememberAnimatedNavController(),
@@ -66,17 +68,20 @@ fun DashboardScreen(
         mutableStateOf(false)
     }
 
+    val scope = rememberCoroutineScope()
+
     val state = rememberScaffoldState()
     Scaffold(scaffoldState = state, topBar = {
         TopAppBar(
             title = {
-                Text("Kyc App")
+                Text("Dashboard", color = MaterialTheme.colors.primary)
             },
             actions = {
                 IconButton(onClick = { expandedState = true }) {
                     Icon(
                         painter = painterResource(R.drawable.ic_baseline_expand_more_24),
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = Color.White
                     )
 
                     DropdownMenu(
@@ -87,63 +92,91 @@ fun DashboardScreen(
                             expandedState = false
                             viewModel.onEvent(DashboardEvents.Logout)
                         }) {
-                            Text(text = "Logout")
+                            Text(text = "Logout", color = MaterialTheme.colors.primary)
                         }
                     }
                 }
             },
-            backgroundColor = Color.White,
-            elevation = 2.dp
+            backgroundColor = MaterialTheme.colors.background,
+            elevation = 20.dp
         )
     }) {
+        DashboardDetail(viewModelState.wallet) {
+            scope.launch {
+                viewModel.onEvent(it)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DashboardDetail(
+    wallet: String,
+    onClick: (DashboardEvents) -> Unit
+) {
+    ConstraintLayout(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        val (container, walletContainer) = createRefs()
+
         Column(
             modifier = Modifier
                 .padding(horizontal = 8.dp)
                 .padding(top = 16.dp)
+                .constrainAs(container) {
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    top.linkTo(parent.top)
+                }
         ) {
-            Column(
-                modifier = Modifier.padding(vertical = 32.dp)
-            ) {
-                Text("Hi", style = MaterialTheme.typography.h3)
-                Text("jet@gmail.com", style = MaterialTheme.typography.h5)
-            }
-            Spacer(modifier = Modifier.size(20.dp))
+
             Column(
                 modifier = Modifier.padding(vertical = 16.dp)
             ) {
                 DashboardItem(title = "Browse", onClick = {
-                    viewModel.onEvent(DashboardEvents.Browse)
+                    onClick(DashboardEvents.Browse)
                 })
                 DashboardItem(title = "Submit", onClick = {
-                    viewModel.onEvent(DashboardEvents.Submit)
+                    onClick(DashboardEvents.Submit)
                 })
             }
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Wallet", style = MaterialTheme.typography.subtitle1)
-                Text("67763746376537456374573574", style = MaterialTheme.typography.subtitle2)
-            }
+        }
 
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .constrainAs(walletContainer) {
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    bottom.linkTo(parent.bottom, 16.dp)
+                }
+        ) {
+            Text(
+                "Kyc Wallet",
+                style = MaterialTheme.typography.subtitle1,
+                color = MaterialTheme.colors.primaryVariant
+            )
+            Text(
+                "$wallet",
+                style = MaterialTheme.typography.subtitle2,
+                color = MaterialTheme.colors.primaryVariant
+            )
         }
     }
 }
 
 @Composable
 fun DashboardItem(modifier: Modifier = Modifier, title: String = "", onClick: (String) -> Unit) {
-
     Column(
         modifier = modifier
     ) {
         Card(
             modifier
-                .height(140.dp)
+                .height(160.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color.Cyan)
-                .padding(horizontal = 18.dp)
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = {
@@ -151,19 +184,38 @@ fun DashboardItem(modifier: Modifier = Modifier, title: String = "", onClick: (S
                         }
                     )
                 },
-
-            backgroundColor = Color.Cyan,
         ) {
             Row(
-                modifier.fillMaxSize(),
+                modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.linearGradient(
+                            listOf<Color>(
+                                Color(0xFFca8a04),
+                                Color(0xFFdc2626)
+                            )
+                        )
+                    )
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = "$title",
                     style = MaterialTheme.typography.h6,
+                    color = Color.Black
                 )
             }
         }
         Spacer(modifier = modifier.size(20.dp))
+    }
+}
+
+@Preview
+@Composable
+fun RenderDashboard() {
+    MaterialTheme {
+        Surface {
+            DashboardDetail(wallet = "", onClick = {})
+        }
     }
 }

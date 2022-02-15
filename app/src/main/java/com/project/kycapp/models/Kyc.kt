@@ -8,6 +8,7 @@ import kotlinx.parcelize.Parcelize
 
 @JsonClass(generateAdapter = true)
 data class Kyc(
+    val id: String,
     val idNumber: String,
     val firstName: String,
     val surname: String,

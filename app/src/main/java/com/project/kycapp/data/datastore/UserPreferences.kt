@@ -25,6 +25,12 @@ class UserPreferences(private val context: Context) {
                 preferences[EMAIL_KEY] ?: ""
             }
 
+    fun walletFlow(): Flow<String> =
+        context.dataStore.data
+            .map { preferences ->
+                preferences[WALLET_KEY] ?: ""
+            }
+
     suspend fun setToken(token: String) {
         context.dataStore.edit { preferences ->
             preferences[TOKEN_KEY] = token
@@ -37,9 +43,16 @@ class UserPreferences(private val context: Context) {
         }
     }
 
+    suspend fun setWallet(walletToken: String) {
+        context.dataStore.edit { preferences ->
+            preferences[WALLET_KEY] = walletToken
+        }
+    }
+
     companion object {
         val TOKEN_KEY = stringPreferencesKey("token_key")
         val EMAIL_KEY = stringPreferencesKey("email_key")
+        val WALLET_KEY = stringPreferencesKey("wallet_key")
     }
 }
 

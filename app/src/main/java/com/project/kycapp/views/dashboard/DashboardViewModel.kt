@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.project.kycapp.data.datastore.UserPreferences
+import com.project.kycapp.data.repository.Resource
 import com.project.kycapp.repository.KycRepository
 
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +40,14 @@ class DashboardViewModel @Inject constructor(
                 )
             }
         }
+
+        viewModelScope.launch {
+            userPreferences.walletFlow().collect {
+                _state.value = state.value.copy(
+                    wallet = it
+                )
+            }
+        }
     }
 
     fun onEvent(dashboardEvents: DashboardEvents) {
@@ -46,14 +55,21 @@ class DashboardViewModel @Inject constructor(
             is DashboardEvents.VerifyToken -> {
                 viewModelScope.launch {
                     kycRepository.validateToken(dashboardEvents.value).collect {
-                        if (it.data?.state == false) {
-                            _eventFlow.emit(UIEvent.Logout)
-                        } else {
-                            _state.value = it.data?.wallet?.let { it1 ->
-                                state.value.copy(
-                                    wallet = it1
-                                )
-                            }!!
+                        when (it){
+                            is Resource.Error -> {
+                                _eventFlow.emit(UIEvent.Logout)
+                            }
+                            is Resource.Success -> {
+                                if (it.data?.state == false) {
+                                    _eventFlow.emit(UIEvent.Logout)
+                                } else {
+                                    _state.value = it.data?.wallet?.let { it1 ->
+                                        state.value.copy(
+                                            wallet = it1
+                                        )
+                                    }!!
+                                }
+                            }
                         }
                     }
                 }
@@ -65,6 +81,10 @@ class DashboardViewModel @Inject constructor(
 
                 viewModelScope.launch {
                     userPreferences.setEmail("")
+                }
+
+                viewModelScope.launch {
+                    userPreferences.setWallet("")
                 }
             }
             DashboardEvents.Browse -> {

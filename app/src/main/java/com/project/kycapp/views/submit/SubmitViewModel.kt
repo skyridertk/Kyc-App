@@ -73,6 +73,7 @@ class SubmitViewModel @Inject constructor(userPreferences: UserPreferences, val 
                 viewModelScope.launch { 
                     try {
                         val kyc = Kyc(
+                            id="0",
                             idNumber = state.value.idNumber,
                             firstName = state.value.firstName,
                             surname = state.value.surname,
@@ -98,6 +99,16 @@ class SubmitViewModel @Inject constructor(userPreferences: UserPreferences, val 
                         Log.d(TAG, "onEvent: Exception: ${ex.localizedMessage}")
                     }
                 }
+            }
+            is SubmitEvents.ChangeProofOfId -> {
+                _state.value = state.value.copy(
+                    proofOfId = events.value
+                )
+            }
+            is SubmitEvents.ChangeProofOfResidence -> {
+                _state.value = state.value.copy(
+                    proofOfResidence = events.value
+                )
             }
         }
     }

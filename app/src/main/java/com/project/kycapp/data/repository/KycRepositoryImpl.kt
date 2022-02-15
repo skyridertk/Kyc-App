@@ -15,15 +15,23 @@ class KycRepositoryImpl @Inject constructor(private val kycApi: KycApi): KycRepo
         const val TAG = "KycRepositoryImpl"
     }
     override suspend fun register(account: Account): Flow<Resource<Authentication>> = flow {
-        val res = kycApi.registerUser(account)
+        try{
+            val res = kycApi.registerUser(account)
 
-        emit(Resource.Success<Authentication>(res.toAuthentication()))
+            emit(Resource.Success<Authentication>(res.toAuthentication()))
+        } catch (ex: Exception){
+            emit(Resource.Error<Authentication>(ex.localizedMessage))
+        }
     }
 
     override suspend fun login(account: Account): Flow<Resource<Authentication>> = flow {
-        val res = kycApi.loginUser(account)
+        try{
+            val res = kycApi.loginUser(account)
 
-        emit(Resource.Success<Authentication>(res.toAuthentication()))
+            emit(Resource.Success<Authentication>(res.toAuthentication()))
+        } catch (ex: Exception){
+            emit(Resource.Error<Authentication>(ex.localizedMessage))
+        }
     }
 
 
@@ -32,21 +40,33 @@ class KycRepositoryImpl @Inject constructor(private val kycApi: KycApi): KycRepo
     }
 
     override suspend fun validateToken(token: String): Flow<Resource<Validation>> = flow {
-        val res = kycApi.validateToken(token)
+        try {
+            val res = kycApi.validateToken(token)
 
-        emit(Resource.Success<Validation>(res.toValidation()))
+            emit(Resource.Success<Validation>(res.toValidation()))
+        } catch (ex: Exception){
+            emit(Resource.Error<Validation>(ex.localizedMessage))
+        }
     }
 
     override suspend fun browse(token: String): Flow<Resource<List<Kyc>>> = flow {
-        val res = kycApi.browse(token)
+        try {
+            val res = kycApi.browse(token)
 
-        emit(Resource.Success<List<Kyc>>(res.data.map { it.toKyc() }))
+            emit(Resource.Success<List<Kyc>>(res.data.map { it.toKyc() }))
+        } catch (ex: Exception){
+            emit(Resource.Error<List<Kyc>>(ex.localizedMessage))
+        }
     }
 
     override suspend fun submit(token: String, requestDto: KycRequestDto): Flow<Resource<Message>> = flow {
-        val res = kycApi.submit(token, requestDto)
+        try {
+            val res = kycApi.submit(token, requestDto)
 
-        emit(Resource.Success<Message>(res.toMessage()))
+            emit(Resource.Success<Message>(res.toMessage()))
+        } catch (ex: Exception){
+            emit(Resource.Error<Message>(ex.localizedMessage))
+        }
     }
 }
 
