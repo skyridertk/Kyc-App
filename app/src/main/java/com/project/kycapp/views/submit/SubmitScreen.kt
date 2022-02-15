@@ -3,13 +3,8 @@ package com.project.kycapp.views.submit
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.gestures.ScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,14 +24,13 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import coil.compose.rememberImagePainter
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.project.kycapp.R
 import com.project.kycapp.models.Gender
 import com.project.kycapp.views.login.CustomField
 import com.project.kycapp.views.submit.components.CameraCapture
-import com.project.kycapp.views.submit.components.DatePickerView
 import com.project.kycapp.views.submit.components.GallerySelect
+import com.project.kycapp.views.submit.components.showDatePicker
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -63,6 +57,10 @@ fun SubmitScreen(
     }
 
     var cameraOpen by remember {
+        mutableStateOf(false)
+    }
+
+    var toggleDob by remember {
         mutableStateOf(false)
     }
     val scrollState: ScrollState = rememberScrollState()
@@ -117,7 +115,11 @@ fun SubmitScreen(
             onToggleCameraButton = {
                 cameraOpen = it
             },
-            scrollState = scrollState
+            scrollState = scrollState,
+            toggleDob = toggleDob,
+            onToggleDateOfBirth = {
+                toggleDob = it
+            }
         )
     }
 }
@@ -138,10 +140,12 @@ fun SubmitDetail(
     cameraOpen: Boolean,
     proofResidence: String,
     proofOfId: String,
+    toggleDob: Boolean,
     onClick: (SubmitEvents) -> Unit,
     onChangeExpandedState: (Boolean) -> Unit,
     onToggleGalleryButton: (Boolean) -> Unit,
     onToggleCameraButton: (Boolean) -> Unit,
+    onToggleDateOfBirth: (Boolean) -> Unit,
     scrollState: ScrollState
 ) {
     ConstraintLayout(
@@ -184,11 +188,25 @@ fun SubmitDetail(
                 onClick(SubmitEvents.ChangeAddress(it))
             })
 
-            DatePickerView()
 
-            CustomField(value = dateOfBirth, label = "Date of Birth", onchange = {
-                onClick(SubmitEvents.ChangeDateOfBirth(it))
-            })
+            Box {
+                Column(modifier = Modifier) {
+                    Text("Your dob: $dateOfBirth", color = MaterialTheme.colors.primary)
+
+                    Button(onClick = {
+                        onToggleDateOfBirth(true)
+                    }) {
+                        Text(text = "Pick DOB")
+                    }
+
+                    if (toggleDob) {
+                        showDatePicker(context = context, onClick = {
+                            onClick(SubmitEvents.ChangeDateOfBirth(it))
+                            onToggleDateOfBirth(false)
+                        })
+                    }
+                }
+            }
 
             IconButton(onClick = { onChangeExpandedState(true) }) {
                 Row {
@@ -324,7 +342,9 @@ fun RenderSubmit() {
                 onToggleGalleryButton = {},
                 proofResidence = "",
                 proofOfId = "",
-                scrollState = rememberScrollState()
+                scrollState = rememberScrollState(),
+                toggleDob = false,
+                onToggleDateOfBirth = {}
             )
         }
     }
