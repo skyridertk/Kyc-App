@@ -2,6 +2,7 @@ package com.project.kycapp.data.api.dto
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import java.io.File
 
 @JsonClass(generateAdapter = true)
 data class KycRequestDto(
@@ -24,5 +25,10 @@ data class KycRequestDto(
     @Json(name = "phone")
     val phone: String,
     @Json(name = "status")
-    val status: String
+    val status: String,
+    @Json(name = "proofOfResidence")
+    val proofOfResidence: String,
+    @Json(name = "proofOfId")
+    val proofOfId: String
+
 )

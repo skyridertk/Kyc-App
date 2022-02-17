@@ -14,7 +14,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class BrowseViewModel @Inject constructor(userPreferences: UserPreferences, val kycRepository: KycRepository) : ViewModel() {
+class BrowseViewModel @Inject constructor(
+    userPreferences: UserPreferences,
+    val kycRepository: KycRepository
+) : ViewModel() {
     private val _state = MutableStateFlow(BrowseState())
     val state: StateFlow<BrowseState>
         get() = _state
@@ -32,8 +35,8 @@ class BrowseViewModel @Inject constructor(userPreferences: UserPreferences, val 
         }
     }
 
-    fun onEvent(browseEvents: BrowseEvents){
-        when (browseEvents){
+    fun onEvent(browseEvents: BrowseEvents) {
+        when (browseEvents) {
             BrowseEvents.FETCH -> {
                 getKyc(_token.value)
             }
@@ -48,30 +51,44 @@ class BrowseViewModel @Inject constructor(userPreferences: UserPreferences, val 
     private fun getKyc(token: String) = viewModelScope.launch {
         try {
             kycRepository.browse(token).collect { resource ->
-                Log.d(TAG, "INSIDE: ")
-                when (resource){
-                    is Resource.Error -> TODO()
+
+                when (resource) {
+                    is Resource.Error -> {
+                        _state.value = state.value.copy(
+                            isLoading = true,
+                            error = true
+                        )
+
+                        _eventFlow.emit(UIEvent.Error("Error Occured"))
+                    }
                     is Resource.Success -> {
-                        _state.value = resource.data?.let {
-                            Log.d(TAG, "DATA: ${it}")
-                            state.value.copy(
-                                listOfKyc = it,
-                                isLoading = false
-                            )
-                        }!!
+                        val listKyc = resource.data ?: emptyList()
+
+                        _state.value = state.value.copy(
+                            listOfKyc = listKyc,
+                            isLoading = false,
+                            error = false
+                        )
+                    }
+                    is Resource.Loading -> {
+                        _state.value = state.value.copy(
+                            isLoading = true,
+                            error = false
+                        )
                     }
                 }
             }
-        } catch (ex: Exception){
-            Log.d(TAG, "getKyc: Exception: ${ex.localizedMessage}")
+        } catch (ex: Exception) {
+            _eventFlow.emit(UIEvent.Error(ex.localizedMessage ?: ""))
         }
     }
-    
+
     companion object {
         const val TAG = "BrowseViewModel"
     }
 
     sealed class UIEvent {
         data class OpenDetail(val kyc: Kyc) : UIEvent()
+        data class Error(val message: String) : UIEvent()
     }
 }

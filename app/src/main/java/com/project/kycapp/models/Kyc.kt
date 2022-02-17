@@ -1,10 +1,7 @@
 package com.project.kycapp.models
 
-import android.os.Parcelable
 import com.project.kycapp.data.api.dto.KycRequestDto
 import com.squareup.moshi.JsonClass
-
-import kotlinx.parcelize.Parcelize
 
 @JsonClass(generateAdapter = true)
 data class Kyc(
@@ -18,9 +15,9 @@ data class Kyc(
     val gender: Gender,
     val approvalCount: Int,
     val owner: String,
-    val status: Pending
-    //val banks: List<Bank>,
-    //val documents: String
+    val status: Pending,
+    val proofOfResidence: String,
+    val proofOfId: String
 )  {
     fun toKycRequestDto(): KycRequestDto {
         return KycRequestDto(
@@ -31,13 +28,13 @@ data class Kyc(
             address = address,
             status = when (this@Kyc.status) {
                 Pending.APPROVED -> {
-                    "Approved"
+                    "approved"
                 }
                 Pending.REJECTED -> {
-                    "Rejected"
+                    "rejected"
                 }
                 else -> {
-                    "Pending"
+                    "pending"
                 }
             },
             approvalCount = approvalCount,
@@ -49,7 +46,9 @@ data class Kyc(
                 }
 
                 else -> "Male"
-            }
+            },
+            proofOfResidence = proofOfResidence,
+            proofOfId = proofOfId,
         )
     }
 }

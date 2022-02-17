@@ -37,21 +37,25 @@ data class KycResponseDto(
         @Json(name = "phone")
         val phone: String,
         @Json(name = "status")
-        val status: String
+        val status: String,
+        @Json(name = "proofOfResidence")
+        val proofOfResidence: String,
+        @Json(name = "proofOfId")
+        val proofOfId: String
     ){
         fun toKyc(): Kyc {
             return  Kyc(
                 id = id,
-                idNumber=idNumber,
+                idNumber =idNumber,
                 firstName = fname,
                 surname = lname,
                 phoneNumber = phone,
                 address = address,
                 status = when (status) {
-                    "Approved" -> {
+                    "approved" -> {
                         Pending.APPROVED
                     }
-                    "Rejected" -> {
+                    "rejected" -> {
                         Pending.REJECTED
                     }
                     else -> {
@@ -67,7 +71,9 @@ data class KycResponseDto(
                     }
 
                     else -> Gender.MALE
-                }
+                },
+                proofOfResidence = proofOfResidence,
+                proofOfId = proofOfId
             )
         }
     }

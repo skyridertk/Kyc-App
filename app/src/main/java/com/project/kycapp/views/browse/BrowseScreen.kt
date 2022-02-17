@@ -1,12 +1,14 @@
 package com.project.kycapp.views.browse
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -16,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,11 +32,12 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.project.kycapp.R
 import com.project.kycapp.models.Kyc
 import com.project.kycapp.models.Pending
-import com.project.kycapp.views.dashboard.DashboardEvents
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -46,6 +50,7 @@ fun BrowseScreen(
     val viewModelState by browseViewModel.state.collectAsState()
 
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         browseViewModel.onEvent(BrowseEvents.FETCH)
@@ -59,16 +64,20 @@ fun BrowseScreen(
                     val jsonAdapter = moshi.adapter(Kyc::class.java).lenient()
                     val userJson = jsonAdapter.toJson(it.kyc)
 
-                    navHostController.navigate("detail/$userJson") {
+                    val encodedUrl = URLEncoder.encode(userJson, StandardCharsets.UTF_8.toString())
+
+                    navHostController.navigate("detail/$encodedUrl") {
                         popUpTo("browse")
                         launchSingleTop = true
                     }
+                }
+                is BrowseViewModel.UIEvent.Error -> {
+                    Toast.makeText(context, it.message, Toast.LENGTH_LONG).show()
                 }
             }
         }
     }
 
-    Log.d("BrowseScreen", "BrowseScreen: ${viewModelState.listOfKyc}")
 
     val state = rememberScaffoldState()
     Scaffold(scaffoldState = state, topBar = {
@@ -166,10 +175,10 @@ private fun BrowseDetail(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(8.dp),
+                    .padding(horizontal = 4.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(listOfKyc) { kyc ->
+                itemsIndexed(listOfKyc) { index, kyc ->
                     Row(
                         Modifier.pointerInput(Unit) {
                             detectTapGestures(
@@ -179,7 +188,18 @@ private fun BrowseDetail(
                             )
                         }
                     ) {
-                        RowItem(kyc.id, kyc.status)
+                        val color = when (kyc.status) {
+                            Pending.PENDING -> {
+                                Color(0xFF87ceeb)
+                            }
+                            Pending.APPROVED -> {
+                                Color(0xFF90EE90)
+                            }
+                            else -> {
+                                Color(0xFFFF7F7F)
+                            }
+                        }
+                        RowItem(kyc.id, kyc.status, color, index)
                     }
                 }
             }
@@ -188,41 +208,58 @@ private fun BrowseDetail(
 }
 
 @Composable
-fun RowItem(id: String, status: Pending) {
+fun RowItem(id: String, status: Pending, color: Color, index: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.DarkGray)
+            .background(color)
             .padding(horizontal = 16.dp)
             .height(100.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(id, color = MaterialTheme.colors.primary, style = MaterialTheme.typography.h5)
-        when (status) {
-            Pending.PENDING -> {
-                BoxState(text = "P", Color(0xFF87ceeb))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier.weight(1F),
+            ) {
+                Text(
+                    text = "$index",
+                    color = MaterialTheme.colors.primary,
+                    style = MaterialTheme.typography.h5
+                )
             }
-            Pending.APPROVED -> {
-                BoxState(text = "A", Color(0xFF90EE90))
-            }
-            Pending.REJECTED -> {
-                BoxState(text = "R", Color(0xFFFF7F7F))
-            }
+
+            Text(
+                modifier = Modifier.weight(3F),
+                text = id,
+                color = MaterialTheme.colors.primary,
+                style = MaterialTheme.typography.h5
+            )
         }
     }
 }
 
 @Composable
-fun BoxState(text: String, color: Color = Color.LightGray, textColor: Color = Color.Black) {
+fun BoxState(
+    modifier: Modifier = Modifier,
+    text: String,
+    color: Color = Color.LightGray,
+    textColor: Color = Color.Black
+) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .size(72.dp)
             .clip(CircleShape)
             .background(color)
     ) {
-        Text("$text", color = textColor, modifier = Modifier.align(Alignment.Center))
+        Text("$text", color = textColor, modifier = modifier.align(Alignment.Center))
     }
 }
 
@@ -245,9 +282,9 @@ fun BrowsePreview() {
 @Composable
 private fun Sample() {
     Column {
-        RowItem(id = "1", status = Pending.PENDING)
-        RowItem(id = "1", status = Pending.APPROVED)
-        RowItem(id = "1", status = Pending.REJECTED)
+        RowItem(id = "1", status = Pending.PENDING, Color.Blue, 1)
+        RowItem(id = "1", status = Pending.APPROVED, Color.Blue, 2)
+        RowItem(id = "1", status = Pending.REJECTED, Color.Blue, 3)
     }
 }
 

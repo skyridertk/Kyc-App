@@ -21,6 +21,7 @@ class MainViewModel @Inject constructor(userPreferences: UserPreferences, kycRep
     init {
         viewModelScope.launch {
             userPreferences.tokenFlow().collect {
+                Log.d("MainViewModel", "$it: ")
                 if(it.isNotEmpty()){
                     _state.value = state.value.copy(
                         startNode = "main"

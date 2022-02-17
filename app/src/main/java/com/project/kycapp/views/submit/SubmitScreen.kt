@@ -2,25 +2,30 @@ package com.project.kycapp.views.submit
 
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Environment
+import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -31,7 +36,18 @@ import com.project.kycapp.views.login.CustomField
 import com.project.kycapp.views.submit.components.CameraCapture
 import com.project.kycapp.views.submit.components.GallerySelect
 import com.project.kycapp.views.submit.components.showDatePicker
+import id.zelory.compressor.Compressor
+import id.zelory.compressor.constraint.default
+import id.zelory.compressor.constraint.destination
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -65,7 +81,27 @@ fun SubmitScreen(
     }
     val scrollState: ScrollState = rememberScrollState()
 
-    LaunchedEffect(Unit) { scrollState.animateScrollTo(10000) }
+    LaunchedEffect(Unit) {
+        scrollState.animateScrollTo(10000)
+
+        submitViewModel.eventFlow.collect {
+            when (it) {
+                is SubmitViewModel.UIEvent.Error -> {
+                    Toast.makeText(current, it.message, Toast.LENGTH_LONG).show()
+                }
+                is SubmitViewModel.UIEvent.Main -> {
+//                    navHostController.navigate("dashboard"){
+//                        popUpTo("dashboard")
+//                        launchSingleTop = true
+//                    }
+
+                    Toast.makeText(current, "Has been saved", Toast.LENGTH_LONG).show()
+
+                    submitViewModel.onEvent(SubmitEvents.Clear)
+                }
+            }
+        }
+    }
 
     Scaffold(scaffoldState = state, topBar = {
         TopAppBar(
@@ -119,12 +155,26 @@ fun SubmitScreen(
             toggleDob = toggleDob,
             onToggleDateOfBirth = {
                 toggleDob = it
+            },
+            loading = viewModelState.loading,
+            proofResPreview = viewModelState.proofResPreview,
+            proofIdPreview = viewModelState.proofIdPreview,
+            onTogglePreviewRes = {
+                scope.launch {
+                    submitViewModel.onEvent(SubmitEvents.ChangeResidencePreview(it))
+                }
+            },
+            onTogglePreviewId = {
+                scope.launch {
+                    submitViewModel.onEvent(SubmitEvents.ChangeIDPreview(it))
+                }
             }
         )
     }
 }
 
 
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun SubmitDetail(
     context: Context,
@@ -146,14 +196,19 @@ fun SubmitDetail(
     onToggleGalleryButton: (Boolean) -> Unit,
     onToggleCameraButton: (Boolean) -> Unit,
     onToggleDateOfBirth: (Boolean) -> Unit,
-    scrollState: ScrollState
+    scrollState: ScrollState,
+    loading: Boolean,
+    proofResPreview: Boolean,
+    proofIdPreview: Boolean,
+    onTogglePreviewRes: (Boolean) -> Unit,
+    onTogglePreviewId: (Boolean) -> Unit
 ) {
     ConstraintLayout(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp)
     ) {
-        val (container, buttonContainer) = createRefs()
+        val (container, buttonContainer, loader) = createRefs()
 
         Column(
             modifier = Modifier
@@ -191,17 +246,17 @@ fun SubmitDetail(
 
             Box {
                 Column(modifier = Modifier) {
-                    Text("Your dob: $dateOfBirth", color = MaterialTheme.colors.primary)
 
                     Button(onClick = {
                         onToggleDateOfBirth(true)
                     }) {
-                        Text(text = "Pick DOB")
+                        Text(text = if(dateOfBirth == "") "Pick DOB" else "DOB: $dateOfBirth")
                     }
 
                     if (toggleDob) {
                         showDatePicker(context = context, onClick = {
                             onClick(SubmitEvents.ChangeDateOfBirth(it))
+                        }, onDismiss = {
                             onToggleDateOfBirth(false)
                         })
                     }
@@ -244,7 +299,16 @@ fun SubmitDetail(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("You picked: $proofResidence", color = MaterialTheme.colors.primary)
+                    if (proofResPreview) {
+                        ImagePreviewLoad()
+                    } else {
+                        if(proofResidence != ""){
+                            val file = File(Uri.parse(proofResidence).toFile().toURI())
+                            val filePath: String = file.path
+                            val bitmap = BitmapFactory.decodeFile(filePath)
+                            ImagePreview(bitmap = bitmap)
+                        }
+                    }
 
                     Button(onClick = {
                         onToggleGalleryButton(true)
@@ -255,8 +319,32 @@ fun SubmitDetail(
                         GallerySelect(
                             modifier = Modifier,
                             onImageUri = { uri ->
-                                onClick(SubmitEvents.ChangeProofOfResidence(uri.toString()))
                                 onToggleGalleryButton(false)
+                                onTogglePreviewRes(true)
+
+                                GlobalScope.launch(Dispatchers.IO) {
+
+                                    val image =
+                                        ImageDecoder.createSource(context.contentResolver, uri)
+                                    val bitmap = ImageDecoder.decodeBitmap(image)
+
+                                    val file =
+                                        bitmapToFile(bitmap, "${System.currentTimeMillis()}.png")
+
+                                    Compressor.compress(context, file!!) {
+                                        default()
+                                        destination(file)
+                                    }
+
+                                    onClick(
+                                        SubmitEvents.ChangeProofOfResidence(
+                                            file.toURI().toString()
+                                        )
+                                    )
+
+                                    onTogglePreviewRes(false)
+
+                                }
                             }
                         )
                     }
@@ -264,11 +352,22 @@ fun SubmitDetail(
                 }
             }
 
+
             Box {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Your image location: $proofOfId", color = MaterialTheme.colors.primary)
+                    if (proofIdPreview) {
+                        ImagePreviewLoad()
+                    } else {
+                        if(proofOfId != ""){
+                            val file = File(Uri.parse(proofOfId).toFile().toURI())
+                            val filePath: String = file.path
+                            val bitmap = BitmapFactory.decodeFile(filePath)
+                            ImagePreview(bitmap = bitmap)
+                        }
+
+                    }
 
                     Button(onClick = {
                         onToggleCameraButton(true)
@@ -280,8 +379,27 @@ fun SubmitDetail(
                         CameraCapture(
                             modifier = Modifier,
                             onImageFile = { file ->
-                                onClick(SubmitEvents.ChangeProofOfId(file.toUri().toString()))
                                 onToggleCameraButton(false)
+                                onTogglePreviewId(true)
+
+                                GlobalScope.launch(Dispatchers.IO) {
+                                    val image = ImageDecoder.createSource(
+                                        context.contentResolver,
+                                        file.toUri()
+                                    )
+                                    val bitmap = ImageDecoder.decodeBitmap(image)
+
+                                    val file =
+                                        bitmapToFile(bitmap, "${System.currentTimeMillis()}.png")
+
+                                    val compressedImageFile = Compressor.compress(context, file!!) {
+                                        default()
+                                        destination(file)
+                                    }
+
+                                    onClick(SubmitEvents.ChangeProofOfId(file.toUri().toString()))
+                                    onTogglePreviewId(false)
+                                }
                             }
                         )
                     }
@@ -289,7 +407,6 @@ fun SubmitDetail(
                     Spacer(modifier = Modifier.size(20.dp))
                 }
             }
-
 
         }
 
@@ -304,7 +421,9 @@ fun SubmitDetail(
                 }
         ) {
             Button(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    onClick(SubmitEvents.Submit)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
@@ -315,6 +434,86 @@ fun SubmitDetail(
                 Text(text = "Submit", color = MaterialTheme.colors.primary)
             }
         }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+                .constrainAs(loader) {
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    bottom.linkTo(parent.bottom)
+                    top.linkTo(parent.top)
+                }
+        ) {
+            if (loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .height(200.dp)
+                        .align(Alignment.Center),
+                )
+            }
+
+        }
+    }
+}
+
+@Composable
+fun ImagePreviewLoad() {
+    Box(
+        modifier = Modifier
+            .size(250.dp)
+            .background(Color.LightGray)
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.align(Alignment.Center)
+        )
+    }
+}
+
+@Composable
+fun ImagePreview(bitmap: Bitmap) {
+    Box(
+        modifier = Modifier
+            .size(250.dp)
+            .background(Color.LightGray)
+    ) {
+        Image(
+            modifier = Modifier
+                .fillMaxSize()
+                .align(Alignment.Center),
+            bitmap = bitmap.asImageBitmap(),
+            contentDescription = null
+        )
+    }
+}
+
+fun bitmapToFile(bitmap: Bitmap, fileNameToSave: String): File? { // File name like "image.png"
+    //create a file to write bitmap data
+    var file: File? = null
+    return try {
+        val path = Environment.getExternalStoragePublicDirectory(
+            Environment.DIRECTORY_PICTURES
+        )
+
+        path.mkdirs();
+        file = File(path.toString() + File.separator + fileNameToSave)
+        file.createNewFile()
+
+        //Convert bitmap to byte array
+        val bos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, bos) // YOU can also save it in JPEG
+        val bitmapdata = bos.toByteArray()
+
+        //write the bytes in file
+        val fos = FileOutputStream(file)
+        fos.write(bitmapdata)
+        fos.flush()
+        fos.close()
+        file
+    } catch (e: Exception) {
+        e.printStackTrace()
+        file // it will return null
     }
 }
 
@@ -344,7 +543,12 @@ fun RenderSubmit() {
                 proofOfId = "",
                 scrollState = rememberScrollState(),
                 toggleDob = false,
-                onToggleDateOfBirth = {}
+                onToggleDateOfBirth = {},
+                loading = true,
+                proofIdPreview = false,
+                proofResPreview = false,
+                onTogglePreviewId = {},
+                onTogglePreviewRes = {}
             )
         }
     }

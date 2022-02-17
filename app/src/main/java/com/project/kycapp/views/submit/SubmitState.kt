@@ -1,8 +1,9 @@
 package com.project.kycapp.views.submit
 
-import android.net.Uri
+
 import com.project.kycapp.models.Gender
 import com.project.kycapp.models.Pending
+
 
 data class SubmitState(
     val token: String = "",
@@ -18,5 +19,8 @@ data class SubmitState(
     val status: Pending = Pending.PENDING,
     val proofOfResidence: String = "",
     val proofOfId: String = "",
-    val face: String = ""
+    val face: String = "",
+    val loading: Boolean = false,
+    val proofResPreview: Boolean = false,
+    val proofIdPreview: Boolean = false,
 )

@@ -6,6 +6,7 @@ import com.project.kycapp.data.datastore.UserPreferences
 import com.project.kycapp.data.repository.Resource
 import com.project.kycapp.models.Account
 import com.project.kycapp.repository.KycRepository
+import com.project.kycapp.views.register.RegisterViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -40,7 +41,9 @@ class LoginViewModel @Inject constructor(private val kycRepository: KycRepositor
                         kycRepository.login(account).collect {
 
                             when (it){
-                                is Resource.Error -> TODO()
+                                is Resource.Error -> {
+                                    _eventFlow.emit(UIEvent.Error(it.message ?: ""))
+                                }
                                 is Resource.Success -> {
                                     Log.d(TAG, "onEvent: DATA ${it.message}")
 
@@ -79,5 +82,8 @@ class LoginViewModel @Inject constructor(private val kycRepository: KycRepositor
     sealed class UIEvent {
         object Main: UIEvent()
         object Register: UIEvent()
+        data class Error(
+            val message: String
+        ) : UIEvent()
     }
 }

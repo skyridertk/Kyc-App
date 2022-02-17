@@ -1,6 +1,8 @@
 package com.project.kycapp
 
+import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
@@ -22,21 +24,194 @@ fun NavigationController(startDestination: String = "authentication") {
 
     AnimatedNavHost(navController = navController, startDestination = startDestination) {
         navigation(startDestination = "register", route = "authentication") {
-            composable("register") {
+            composable("register",
+                enterTransition = {
+                    when (initialState.destination.route) {
+                        "login" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        else -> null
+                    }
+                },
+                exitTransition = {
+                    when (targetState.destination.route) {
+                        "login" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        else -> null
+                    }
+                },
+                popEnterTransition = {
+                    when (initialState.destination.route) {
+                        "login" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        else -> null
+                    }
+                },
+                popExitTransition = {
+                    when (targetState.destination.route) {
+                        "login" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        else -> null
+                    }
+                }
+                ) {
                 RegistrationScreen(navController)
             }
 
-            composable("login") {
+            composable("login",
+                enterTransition = {
+                    when (initialState.destination.route) {
+                        "register" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        else -> null
+                    }
+                },
+                exitTransition = {
+                    when (targetState.destination.route) {
+                        "register" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        else -> null
+                    }
+                },
+                popEnterTransition = {
+                    when (initialState.destination.route) {
+                        "register" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        else -> null
+                    }
+                },
+                popExitTransition = {
+                    when (targetState.destination.route) {
+                        "register" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        else -> null
+                    }
+                }
+                ) {
                 LoginScreen(navController)
             }
         }
 
         navigation(startDestination = "dashboard", route = "main") {
-            composable("dashboard") {
+            composable("dashboard",
+                enterTransition = {
+                    when (initialState.destination.route) {
+                        "login" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        "register" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        "browse" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        "submit" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        else -> null
+                    }
+                },
+                exitTransition = {
+                    when (targetState.destination.route) {
+                        "login" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        "register" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        "browse" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        "submit" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        else -> null
+                    }
+                },
+                popEnterTransition = {
+                    when (initialState.destination.route) {
+                        "login" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        "register" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        "browse" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        "submit" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+
+                        else -> null
+                    }
+                },
+                popExitTransition = {
+                    when (targetState.destination.route) {
+                        "login" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        "register" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        "browse" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        "submit" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        else -> null
+                    }
+                }
+                ) {
                 DashboardScreen(navController)
             }
 
-            composable("browse") {
+            composable("browse",
+                enterTransition = {
+                    when (initialState.destination.route) {
+                        "detail" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        else -> null
+                    }
+                },
+                exitTransition = {
+                    when (targetState.destination.route) {
+                        "detail" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                        else -> null
+                    }
+                },
+                popEnterTransition = {
+                    when (initialState.destination.route) {
+                        "detail" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        else -> null
+                    }
+                },
+                popExitTransition = {
+                    when (targetState.destination.route) {
+                        "detail" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        "dashboard" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                        else -> null
+                    }
+                }
+                ) {
                 BrowseScreen(navController)
             }
 
@@ -44,12 +219,77 @@ fun NavigationController(startDestination: String = "authentication") {
                 "detail/{data}",
                 arguments = listOf(navArgument("data") {
                     type = NavType.StringType
-                })
+                }),
+                enterTransition = {
+                    when (initialState.destination.route) {
+                        "browse" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+
+                        else -> null
+                    }
+                },
+                exitTransition = {
+                    when (targetState.destination.route) {
+                        "browse" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+
+                        else -> null
+                    }
+                },
+                popEnterTransition = {
+                    when (initialState.destination.route) {
+                        "browse" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+
+                        else -> null
+                    }
+                },
+                popExitTransition = {
+                    when (targetState.destination.route) {
+                        "browse" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+
+                        else -> null
+                    }
+                }
             ) {
                 DetailScreen(navController)
             }
 
-            composable("submit") {
+            composable("submit",
+                enterTransition = {
+                    when (initialState.destination.route) {
+                        "dashboard" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+
+                        else -> null
+                    }
+                },
+                exitTransition = {
+                    when (targetState.destination.route) {
+                        "dashboard" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+
+                        else -> null
+                    }
+                },
+                popEnterTransition = {
+                    when (initialState.destination.route) {
+                        "dashboard" ->
+                            slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+
+                        else -> null
+                    }
+                },
+                popExitTransition = {
+                    when (targetState.destination.route) {
+                        "dashboard" ->
+                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+
+                        else -> null
+                    }
+                }
+                ) {
                 SubmitScreen(navController)
             }
         }

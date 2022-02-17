@@ -3,11 +3,14 @@ package com.project.kycapp.views.detail
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -59,7 +62,10 @@ fun DetailScreen(
             idNumber = viewModelState.idNumber,
             status = viewModelState.status,
             gender = viewModelState.gender,
-            dob = viewModelState.dateOfBirth
+            dob = viewModelState.dateOfBirth,
+            proofOfResidence = viewModelState.proofOfResidence,
+            proofOfId = viewModelState.proofOfId,
+            assetId = viewModelState.assetID
         )
     }
 
@@ -74,63 +80,81 @@ private fun DetailContent(
     idNumber: String,
     status: Pending,
     gender: Gender,
-    dob: String
+    dob: String,
+    proofOfResidence: String,
+    proofOfId: String,
+    assetId: String
 ) {
+    val color = when (status) {
+        Pending.PENDING -> {
+            Color(0xFF87ceeb)
+        }
+        Pending.APPROVED -> {
+            Color(0xFF90EE90)
+        }
+        else -> {
+            Color(0xFFFF7F7F)
+        }
+    }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-        ) {
-            when (status) {
-                Pending.PENDING -> {
-                    BoxState(text = "P", Color(0xFF87ceeb))
-                }
-                Pending.APPROVED -> {
-                    BoxState(text = "A", Color(0xFF90EE90))
-                }
-                Pending.REJECTED -> {
-                    BoxState(text = "R", Color(0xFFFF7F7F))
-                }
-            }
-        }
-        DetailItem(idNumber, "ID No", style = MaterialTheme.typography.h3)
-        Box(
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
-                .size(100.dp)
-                .background(Color.LightGray)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(color)
+                .padding(horizontal=16.dp, vertical=24.dp)
         ) {
-
+            DetailItem(value = idNumber, label = "AssetID", style = MaterialTheme.typography.h3)
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                DetailItem(
+                    modifier = Modifier.weight(2F),
+                    value = fname,
+                    label = "first name",
+                    maxLines = 2
+                )
+                DetailItem(modifier = Modifier.weight(2F), value = lname, label = "surname")
+            }
+            DetailItem(value = phone, label = "phone")
+            DetailItem(value = address, label = "address", maxLines = 3)
+            DetailItem(value = idNumber, label = "idNumber")
+            DetailItem(value = dob, label = "date of birth")
+            DetailItem(value = status.name, label = "asset status")
         }
 
-        DetailItem(fname, "first name")
-        DetailItem(lname, "surname")
-        DetailItem(phone, "phone")
-        DetailItem(address, "address")
-        DetailItem(idNumber, "id")
-        DetailItem(dob, "dob")
     }
 }
 
 @Composable
 private fun DetailItem(
-    idNumber: String,
+    modifier: Modifier = Modifier,
+    value: String,
     label: String,
-    style: TextStyle = MaterialTheme.typography.h5
+    style: TextStyle = MaterialTheme.typography.h5,
+    maxLines: Int = 1
 ) {
-    Column {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+    ) {
         Text(
             "$label", style = MaterialTheme.typography.caption,
-            color = MaterialTheme.colors.primaryVariant
+            color = Color.DarkGray,
+            maxLines = maxLines
         )
         Text(
-            idNumber,
+            value,
             style = style,
-            color = MaterialTheme.colors.primary
+            color = Color.Black
         )
     }
 }
@@ -185,6 +209,9 @@ private fun Client() {
         idNumber = "63-20393049X23",
         status = Pending.PENDING,
         gender = Gender.FEMALE,
-        dob = "29/10/2002"
+        dob = "29/10/2002",
+        proofOfResidence = "",
+        proofOfId = "",
+        assetId = "sdfsdfdsf1231231"
     )
 }

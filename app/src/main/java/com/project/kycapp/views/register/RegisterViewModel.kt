@@ -14,7 +14,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class RegisterViewModel @Inject constructor(private val kycRepository: KycRepository, private val userPreferences: UserPreferences) : ViewModel() {
+class RegisterViewModel @Inject constructor(
+    private val kycRepository: KycRepository,
+    private val userPreferences: UserPreferences
+) : ViewModel() {
     private val _state = MutableStateFlow(RegisterState())
     val state: StateFlow<RegisterState>
         get() = _state
@@ -26,7 +29,7 @@ class RegisterViewModel @Inject constructor(private val kycRepository: KycReposi
     private val _eventFlow = MutableSharedFlow<UIEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    fun onEvent(events: RegisterEvents){
+    fun onEvent(events: RegisterEvents) {
         when (events) {
             is RegisterEvents.Register -> {
                 viewModelScope.launch {
@@ -41,8 +44,10 @@ class RegisterViewModel @Inject constructor(private val kycRepository: KycReposi
 
                         kycRepository.register(account).collect {
 
-                            when (it){
-                                is Resource.Error -> TODO()
+                            when (it) {
+                                is Resource.Error -> {
+                                    _eventFlow.emit(UIEvent.Error(it.message ?: ""))
+                                }
                                 is Resource.Success -> {
                                     Log.d(TAG, "onEvent: DATA ${it.message}")
 
@@ -54,7 +59,7 @@ class RegisterViewModel @Inject constructor(private val kycRepository: KycReposi
 
                         }
 
-                    } catch (ex: Exception){
+                    } catch (ex: Exception) {
                         Log.d(TAG, "onEvent: Exception ${ex.localizedMessage}")
                     }
                 }
@@ -79,7 +84,10 @@ class RegisterViewModel @Inject constructor(private val kycRepository: KycReposi
     }
 
     sealed class UIEvent {
-        object Main: UIEvent()
-        object Login: UIEvent()
+        object Main : UIEvent()
+        object Login : UIEvent()
+        data class Error(
+            val message: String
+        ) : UIEvent()
     }
 }

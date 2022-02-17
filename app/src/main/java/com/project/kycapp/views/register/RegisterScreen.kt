@@ -1,5 +1,6 @@
 package com.project.kycapp.views.register
 
+import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -42,6 +43,8 @@ fun RegistrationScreen(
 
     val scope = rememberCoroutineScope()
 
+    val context: Context = LocalContext.current
+
     LaunchedEffect(Unit) {
         registerViewModel.eventFlow.collect {
             when (it) {
@@ -56,6 +59,9 @@ fun RegistrationScreen(
                         popUpTo("login")
                         launchSingleTop = true
                     }
+                }
+                is RegisterViewModel.UIEvent.Error -> {
+                    Toast.makeText(context, it.message, Toast.LENGTH_LONG).show()
                 }
             }
         }

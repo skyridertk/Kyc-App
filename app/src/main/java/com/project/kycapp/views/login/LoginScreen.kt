@@ -1,5 +1,6 @@
 package com.project.kycapp.views.login
 
+import android.widget.Toast
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,6 +48,9 @@ fun LoginScreen(
                         popUpTo("register")
                         launchSingleTop = true
                     }
+                }
+                is LoginViewModel.UIEvent.Error -> {
+                    Toast.makeText(current, it.message, Toast.LENGTH_LONG).show()
                 }
             }
         }

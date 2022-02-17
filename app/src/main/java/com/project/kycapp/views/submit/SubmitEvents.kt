@@ -12,5 +12,9 @@ sealed class SubmitEvents {
     data class ChangeGender(var value: Gender): SubmitEvents()
     data class ChangeProofOfResidence(var value: String): SubmitEvents()
     data class ChangeProofOfId(var value: String): SubmitEvents()
+    data class ChangeResidencePreview(var value: Boolean) : SubmitEvents()
+    data class  ChangeIDPreview(var value: Boolean) : SubmitEvents()
+
     object Submit: SubmitEvents()
+    object Clear: SubmitEvents()
 }

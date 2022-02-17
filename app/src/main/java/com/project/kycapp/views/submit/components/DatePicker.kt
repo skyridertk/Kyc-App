@@ -14,7 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import java.util.*
 
 @Composable
-fun showDatePicker(context: Context, onClick: (String) -> Unit){
+fun showDatePicker(context: Context, onClick: (String) -> Unit, onDismiss: (Boolean) -> Unit){
 
     val year: Int
     val month: Int
@@ -35,6 +35,10 @@ fun showDatePicker(context: Context, onClick: (String) -> Unit){
 
     datePickerDialog.show()
 
+    datePickerDialog.setOnDismissListener {
+        onDismiss(true)
+    }
+
 }
 
 @Preview
@@ -54,6 +58,8 @@ fun RenderDatePicker() {
                 showDatePicker(context = LocalContext.current,  onClick = {
                     Log.d("RenderDatePicker", "RenderDatePicker: $it")
                     state = false
+                }, onDismiss = {
+
                 })
             }
         }

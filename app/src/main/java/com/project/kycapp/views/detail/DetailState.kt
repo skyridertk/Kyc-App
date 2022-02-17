@@ -1,5 +1,6 @@
 package com.project.kycapp.views.detail
 
+import android.graphics.Bitmap
 import com.project.kycapp.models.Gender
 import com.project.kycapp.models.Pending
 
@@ -13,5 +14,8 @@ data class DetailState(
     val gender: Gender = Gender.FEMALE,
     val approvalCount: Int = 0,
     val owner: String = "",
-    val status: Pending = Pending.PENDING
+    val status: Pending = Pending.PENDING,
+    val proofOfResidence: String = "",
+    val proofOfId: String = "",
+    val assetID: String = ""
 )
